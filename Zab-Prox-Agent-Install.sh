@@ -165,7 +165,7 @@ setup_configuration
 su
 }
 
-instalacao_rhel_7 () {
+instalacao_centos_7 () {
 echo -e "${red}-------------- Verificando se tem autalizções pendentes e atualizando os pacotes --------------${reset}"; sleep 1
 yum check-update | yum update
 yum install epel-release
@@ -186,7 +186,9 @@ echo "${green}-------------- Instalação completa em $SECONDS segundos --------
 setup_configuration
 }
 
-instalacap_rhel_8 () {
+instalacao_centos_8 () {
+## Site para trocar o appstream do mirror.centos.org para vault.centos.org pois não participa mais do stream original e o EOL foi em 2021.
+## https://www.gnulinuxbrasil.com.br/2022/04/12/centos-8-com-erro-centos-8-appstream-error-failed-to-download-metadata-for-repo-appstream-cannot-prepare-internal-mirrorlist-no-urls-in-mirrorlist/
 echo -e "${red}----------- Verificando se tem atualizações pendentes e atualizando os pacotes -----------${reset}"; sleep 1
 yum check-update | yum update
 yum install epel-release
@@ -291,6 +293,7 @@ echo ""
 }
 
 #*#*#*#*#*#*#*# Incio dos comandos #*#*#*#*#*#*#*#
+
 clear
 
 echo ""
@@ -324,19 +327,24 @@ fi
 echo "CTL VERSION FUNCTION"
 echo ${hostnamectl_version}
 
-if [ "$hostnamectl_version" = 'Debian GNU/Linux 10 (buster)' ]; then
+if [ "$hostnamectl_version" = 'Debian GNU/Linux 9 (stretch)' ]; then
 	echo "SUCCESS"
-	instalacao_debian_10
+	instalacao_debian_9
+elif [ "$hostnamectl_version" = 'Debian GNU/Linux 10 (buster)' ]; then
+    echo "SUCCESS"
+    instalacao_debian_10
 elif [ "$hostnamectl_version" = 'Debian GNU/Linux 11 (bullseye)' ]; then
-        echo "SUCCESS"
-        instalacao_debian_11
-elif [ "$hostnamectl_version" = 'CENT' ]; then
-        echo "SUCCESS"
+    echo "SUCCESS"
+    instalacao_debian_11		
+elif [ "$hostnamectl_version" = 'CentOS Linux 7' ]; then
+    echo "SUCCESS"
 	instalacao_centos_7
-elif [ "$hostnamectl_version" = 'CENT' ]; then
-        echo "SUCCESS"
+elif [ "$hostnamectl_version" = 'CentOS Linux 8' ]; then
+    echo "SUCCESS"
 	instalacao_centos_8
+elif [ "$hostnamectl_version" = 'CentOS Linux 9' ]; then
+    echo "SUCCESS"
+	instalacao_centos_9
 else
 	echo "FAIL: Não tem a instalação para essa maquina"
-	change_hostname_case
 fi
