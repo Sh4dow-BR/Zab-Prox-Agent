@@ -22,14 +22,15 @@ enable_remote_commands=0 #default=0 & enable=1
 log_remote_commands=0 #default=0 & enable=1
 DBname_local=/tmp/proxy.db #default=zabbix_proxy
 proxy_local_buffer=0 #default=0
-proxy_offline_buffer=0 #default=0
+proxy_offline_buffer=3 #default=1
 config_frequency=3600 #default=3600
 housekeeping_frequency=1 #default=1
 timeout=4 #default=4
 
 ###############################################
 
-# As cores que podem ser utilizados:
+##### As cores que podem ser utilizados:
+
 red=$(tput setaf 1 && tput bold)
 green=$(tput setaf 2 && tput bold)
 yellow=$(tput setaf 3 && tput bold)
@@ -41,6 +42,11 @@ reset=$(tput sgr0)
 
 ###############################################
 
+#### Variaveis importantes dentro do script:
+
+hostnamectl_version=$(hostnamectl | grep Operating | awk '{print $3,$4,$5,$6}')
+selinux_mode=$(sestatus | grep Current | awk '{print $3}')
+
 # Output de toda a instalação para um arquivo
 #LOG_LOCATION=(pwd)
 #exec >> $LOG_LOCATION/mylogfile.log 2>&1
@@ -50,7 +56,9 @@ reset=$(tput sgr0)
 #exec >> $LOG_LOCATION/mylogfile6.log 2>&1
 #exec > ${LOG_LOCATION}/mylogfile7.log 2>&1
 
-#### Função global para ser chamado quando o case é verdadeiro para assim configurar os configs padroes.
+###############################################
+
+#### Funções globais utilizado dentro do script:
 
 hostnamectl_grep () {
 hostnamectl | grep hostname
@@ -82,25 +90,18 @@ echo "${red} 2 - Não ${reset}"
 read hostname_change;
 
 case $hostname_change in
-        1)
+    1)
 	change_hostname
 	;;
 	2)
 	echo ""
-	echo "${blue}Continuando a instalação${reset}"
+	echo "Continuando a instalação"
 	echo ""
 	;;
 	*)
 	;;
 esac
 }
-
-hostnamectl_version () {
-hostnamectl | grep Operating | awk '{print $3,$4,$5,$6}'
-}
-
-hostnamectl_version=$(hostnamectl | grep Operating | awk '{print $3,$4,$5,$6}')
-selinux_mode=$(sestatus | grep | awk '{print $3}')
 
 limpa_cache_e_update () {
 echo "${red}-------------- Limpando o cache e atualizando os pacotes --------------${reset}"; sleep 1
@@ -191,37 +192,83 @@ instalacao_centos_8 () {
 ## Site para trocar o appstream do mirror.centos.org para vault.centos.org pois não participa mais do stream original e o EOL foi em 2021.
 ## https://www.gnulinuxbrasil.com.br/2022/04/12/centos-8-com-erro-centos-8-appstream-error-failed-to-download-metadata-for-repo-appstream-cannot-prepare-internal-mirrorlist-no-urls-in-mirrorlist/
 echo -e "${red}----------- Verificando se tem atualizações pendentes e atualizando os pacotes -----------${reset}"; sleep 1
-# yum check-update | yum update
-# yum install epel-release
-# yum install yum-utils
+# -- Update opcionais
+# dnf check-update
+# dnf update
+# dnf install epel-release
+# dnf install yum-utils
 echo -e "${red}----------- Verificando se o SELINUX esta ativo e trocando se necessario -----------${reset}"; sleep 1
 
 if [ "$selinux_mode" = 'enforcing' ]; then
-	echo 'Selinux está enforcing e será trocado para disabled'
-	# Trocando o antigo enforcing para disabled
+	echo 'Selinux está no modo "enforcing" e será trocado para disabled'
+	# Trocando o enforcing para disabled no arquivo de configuração do selinux
 	sed -i "s@SELINUX=enforcing@SELINUX=disabled@g" /etc/selinux/config
-	# Setando temporariamente para permissive pois para o disabled entrar em efeito precisa de reiniciar a maquina
+	echo ""
+	# Trocando temporariamente para "permissive" pois para o disabled entrar em efeito precisa de reiniciar a maquina
+	echo 'Trocando temporariamente para o modo "permissive"'
 	setenforce 0
 	echo ""
-	echo 'SELINUX: Modo temporario de "permissive" após a mudança'
-	sestatus | Current
-	echo 'Continuando a instalação'
+	echo 'Modo temporario de "permissive" ativado'
+	echo "$(sestatus | grep Current)"
+	echo ""
+	echo 'Selinux mode trocado, continuando a instalação'
 else
 	echo 'O SELINUX mode não está "enforcing" e continuando a instalação'
 fi
 
-echo "${red}-------------- Baixando Zabbix do Repo oficial --------------${reset}"; sleep 1
-rpm -ivh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-proxy-sqlite3-6.0.3-1.el8.x86_64.rpm
-echo "${red}-------------- Limpando o cache e unpacking o proxy --------------${reset}"; sleep 1
+echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
+rpm -ivh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-2.el8.noarch.rpm
+echo "${red}-------------- Limpando o cache e installando o proxy --------------${reset}"; sleep 1
 dnf clean all
 dnf install zabbix-proxy-sqlite3 -y
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
 zabbix_proxy -V
-echo "${red}-------------- Baixando o Zabbix Agent 2 --------------${reset}"; sleep 1
-rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-agent2-6.0.3-1.el8.x86_64.rpm
-echo "${red}-------------- Limpando o cache e unpacking o Agent 2 --------------${reset}"; sleep 1
+echo "${red}-------------- Installando o Agent 2 --------------${reset}"; sleep 1
 dnf install zabbix-agent2
-echo "${red}-------------- Zabbix Agent Version --------------${reset}"
+echo "${red}-------------- Zabbix Agent2 Version --------------${reset}"
+zabbix_agent2 -V
+echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
+setup_configuration
+}
+
+instalacao_centos_9 () {
+## Site para trocar o appstream do mirror.centos.org para vault.centos.org pois não participa mais do stream original e o EOL foi em 2021.
+## https://www.gnulinuxbrasil.com.br/2022/04/12/centos-8-com-erro-centos-8-appstream-error-failed-to-download-metadata-for-repo-appstream-cannot-prepare-internal-mirrorlist-no-urls-in-mirrorlist/
+echo -e "${red}----------- Verificando se tem atualizações pendentes e atualizando os pacotes -----------${reset}"; sleep 1
+# -- Update opcionais
+# dnf check-update
+# dnf update
+# dnf install epel-release
+# dnf install yum-utils
+echo -e "${red}----------- Verificando se o SELINUX esta ativo e trocando se necessario -----------${reset}"; sleep 1
+
+if [ "$selinux_mode" = 'enforcing' ]; then
+	echo 'Selinux está no modo "enforcing" e será trocado para disabled'
+	# Trocando o enforcing para disabled no arquivo de configuração
+	sed -i "s@SELINUX=enforcing@SELINUX=disabled@g" /etc/selinux/config
+	echo ""
+	# Trocando temporariamente para permissive pois para o disabled entrar em efeito precisa de reiniciar a maquina
+	echo 'Trocando temporariamente para modo "permissive"'
+	setenforce 0
+	echo ""
+	echo 'Modo temporario de "permissive" ativado'
+	echo "$(sestatus | grep Current)"
+	echo ""
+	echo 'Continuando a instalação'
+else
+	echo 'O SELINUX mode não está "enforcing" e então continuando a instalação'
+fi
+
+echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
+rpm -ivh https://repo.zabbix.com/zabbix/6.0/rhel/9/x86_64/zabbix-release-6.0-3.el9.noarch.rpm
+echo "${red}-------------- Limpando o cache e installando o proxy --------------${reset}"; sleep 1
+dnf clean all
+dnf install zabbix-proxy-sqlite3 -y
+echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
+zabbix_proxy -V
+echo "${red}-------------- Installando o Agent 2 --------------${reset}"; sleep 1
+dnf install zabbix-agent2
+echo "${red}-------------- Zabbix Agent2 Version --------------${reset}"
 zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
 setup_configuration
@@ -290,7 +337,6 @@ echo "${red}-------------- Enabling e Resetando o Serviço Proxy e Agent 2 -----
 # Restart Serviço Proxy
 chown -R zabbix. /etc/zabbix
 systemctl enable zabbix-proxy.service && systemctl enable zabbix-agent2.service
-systemctl start zabbix-proxy.service && systemctl start zabbix-agent2.service
 systemctl restart zabbix-proxy.service && systemctl restart zabbix-agent2.service
 
 echo ""
@@ -328,19 +374,31 @@ echo "${blue} Author: https://github.com/Sh4d0w-BR  ${reset}"
 echo ""
 echo "${green}-------------- Verificando informações do host --------------${reset}"; sleep 2
 echo ""
-# Chamar a função de hostnamectl
-hostnamectl_grep
 
-if [ "$1" = 'change' ]; then
-	# Chama a função para trocar o hostname porque o parâmetro "change" foi inserido com o script
-	change_hostname
+if [ "$1" = 'change' ] && [ -n "$2" ]; then
+    # Se a posição 1 é "change" e o valor do string da posição 2 não é zero, faça esse:
+    echo "Antigo hostname: `cat /etc/hostname`"
+    echo "Novo hostname: $2"
+    # Trocando o hostname para o segundo parametro que foi inserido
+    hostnamectl set-hostname "$2"
+    echo ""
+    echo "------------------------------------"
+    echo ""
+    hostnamectl_grep
+    echo ""
+elif [ "$1" = 'change' ]; then
+    hostnamectl_grep
+    # Chama a função para trocar o hostname porque o parâmetro "change" foi inserido com o script
+    change_hostname
 elif [ "$1" = 'run' ]; then
-	# Executando a instalação sem trocar o hostname
-	echo ""
-	echo 'Executando a instalação'
+    hostnamectl_grep
+    # Executando a instalação sem trocar o hostname
+    echo ""
+    echo 'Executando a instalação sem trocar o hostname'
 else
-	# Chamar a função para seguir com o case normal porque não inseriu um parâmetro
-	change_hostname_case
+    hostnamectl_grep
+    # Chama a função para seguir com o case normal porque não inseriu um parâmetro
+    change_hostname_case
 fi
 
 echo "CTL VERSION FUNCTION"
