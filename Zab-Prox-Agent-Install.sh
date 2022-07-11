@@ -100,6 +100,7 @@ hostnamectl | grep Operating | awk '{print $3,$4,$5,$6}'
 }
 
 hostnamectl_version=$(hostnamectl | grep Operating | awk '{print $3,$4,$5,$6}')
+selinux_mode=$(sestatus | grep | awk '{print $3}')
 
 limpa_cache_e_update () {
 echo "${red}-------------- Limpando o cache e atualizando os pacotes --------------${reset}"; sleep 1
@@ -190,19 +191,36 @@ instalacao_centos_8 () {
 ## Site para trocar o appstream do mirror.centos.org para vault.centos.org pois não participa mais do stream original e o EOL foi em 2021.
 ## https://www.gnulinuxbrasil.com.br/2022/04/12/centos-8-com-erro-centos-8-appstream-error-failed-to-download-metadata-for-repo-appstream-cannot-prepare-internal-mirrorlist-no-urls-in-mirrorlist/
 echo -e "${red}----------- Verificando se tem atualizações pendentes e atualizando os pacotes -----------${reset}"; sleep 1
-yum check-update | yum update
-yum install epel-release
-yum install yum-utils
+# yum check-update | yum update
+# yum install epel-release
+# yum install yum-utils
+echo -e "${red}----------- Verificando se o SELINUX esta ativo e trocando se necessario -----------${reset}"; sleep 1
+
+if [ "$selinux_mode" = 'enforcing' ]; then
+	echo 'Selinux está enforcing e será trocado para disabled'
+	# Trocando o antigo enforcing para disabled
+	sed -i "s@SELINUX=enforcing@SELINUX=disabled@g" /etc/selinux/config
+	# Setando temporariamente para permissive pois para o disabled entrar em efeito precisa de reiniciar a maquina
+	setenforce 0
+	echo ""
+	echo 'SELINUX: Modo temporario de "permissive" após a mudança'
+	sestatus | Current
+	echo 'Continuando a instalação'
+else
+	echo 'O SELINUX mode não está "enforcing" e continuando a instalação'
+fi
+
 echo "${red}-------------- Baixando Zabbix do Repo oficial --------------${reset}"; sleep 1
-rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-proxy-sqlite3-6.0.3-1.el8.x86_64.rpm
+rpm -ivh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-proxy-sqlite3-6.0.3-1.el8.x86_64.rpm
 echo "${red}-------------- Limpando o cache e unpacking o proxy --------------${reset}"; sleep 1
-dnf clean all | dnf install zabbix-proxy-sqlite3
+dnf clean all
+dnf install zabbix-proxy-sqlite3 -y
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
 zabbix_proxy -V
 echo "${red}-------------- Baixando o Zabbix Agent 2 --------------${reset}"; sleep 1
 rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-agent2-6.0.3-1.el8.x86_64.rpm
 echo "${red}-------------- Limpando o cache e unpacking o Agent 2 --------------${reset}"; sleep 1
-dnf clean all | dnf install zabbix-agent2
+dnf install zabbix-agent2
 echo "${red}-------------- Zabbix Agent Version --------------${reset}"
 zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
@@ -272,6 +290,7 @@ echo "${red}-------------- Enabling e Resetando o Serviço Proxy e Agent 2 -----
 # Restart Serviço Proxy
 chown -R zabbix. /etc/zabbix
 systemctl enable zabbix-proxy.service && systemctl enable zabbix-agent2.service
+systemctl start zabbix-proxy.service && systemctl start zabbix-agent2.service
 systemctl restart zabbix-proxy.service && systemctl restart zabbix-agent2.service
 
 echo ""
@@ -336,13 +355,13 @@ elif [ "$hostnamectl_version" = 'Debian GNU/Linux 10 (buster)' ]; then
 elif [ "$hostnamectl_version" = 'Debian GNU/Linux 11 (bullseye)' ]; then
     echo "SUCCESS"
     instalacao_debian_11		
-elif [ "$hostnamectl_version" = 'CentOS Linux 7' ]; then
+elif [ "$hostnamectl_version" = 'CentOS Linux 7 ' ]; then
     echo "SUCCESS"
 	instalacao_centos_7
-elif [ "$hostnamectl_version" = 'CentOS Linux 8' ]; then
+elif [ "$hostnamectl_version" = 'CentOS Linux 8 ' ]; then
     echo "SUCCESS"
 	instalacao_centos_8
-elif [ "$hostnamectl_version" = 'CentOS Linux 9' ]; then
+elif [ "$hostnamectl_version" = 'CentOS Linux 9 ' ]; then
     echo "SUCCESS"
 	instalacao_centos_9
 else
