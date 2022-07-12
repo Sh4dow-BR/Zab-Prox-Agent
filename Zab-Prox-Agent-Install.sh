@@ -1,11 +1,15 @@
 #!/bin/bash
 
-###############################################
-# ///                                     \\\ #
-#    Você pode mudar as variáveis aqui :D     #
-#        Criado pelo Sh4dow-BR                #
-#                                             #
-###############################################
+###################################################
+#    ///                                   \\\    #
+#          Configura as variáveis aqui :D         #
+#                                                 #
+#              Criado pelo Sh4dow-BR              #
+#           https://github.com/Sh4dow-BR          #
+#                                                 #
+#           O git do script/repo:                 #
+# https://github.com/Sh4dow-BR/Zab-Prox-Agent.git #
+###################################################
 
 ##### Variaveis para os arquivos: /etc/zabbix/zabbix_proxy.conf e /etc/zabbix/zabbix_agent2.conf
 
@@ -47,14 +51,12 @@ reset=$(tput sgr0)
 hostnamectl_version=$(hostnamectl | grep Operating | awk '{print $3,$4,$5,$6}')
 selinux_mode=$(sestatus | grep Current | awk '{print $3}')
 
-# Output de toda a instalação para um arquivo
+# QUERO IMPLEMENTAR -> Output de toda a instalação para um arquivo
+# https://www.howtogeek.com/435903/what-are-stdin-stdout-and-stderr-on-linux/
+#
+# Codigo abaixo produz um resultado mas só a primeira parte :(
 #LOG_LOCATION=(pwd)
-#exec >> $LOG_LOCATION/mylogfile.log 2>&1
-#exec > ${LOG_LOCATION}/mylogfile3.log 2>&1
-#exec >> $LOG_LOCATION/mylogfile4.log 2>&1
-#exec > ${LOG_LOCATION}/mylogfile5.log 2>&1
-#exec >> $LOG_LOCATION/mylogfile6.log 2>&1
-#exec > ${LOG_LOCATION}/mylogfile7.log 2>&1
+# exec > ${LOG_LOCATION}/mylogfile7.log 2>&1
 
 ###############################################
 
@@ -113,6 +115,45 @@ apt update
 # apt install -f
 }
 
+#### Instalações abaixo
+
+instalacao_debian_9 () {
+echo ""
+echo '> Infelizmente o Debian 9 não tem supporte para o proxy desde da versão 5.2'
+echo ""
+echo '> Caso tiver utilizando o Zabbix 5.0, o codigo esta comentado dentro da função: instalacao_debian_9'
+echo ""
+echo '> Obs. eu não testei no meu ambiente porque tenho o Zabbix 6.0'
+
+###### Codigo para a instalação no Zabbix 5
+### Repos oficiais: https://repo.zabbix.com/zabbix/5.0/debian/pool/main/z/zabbix/
+#
+# Chamar a função para fazer limpeza e update dos pacotes
+#limpa_cache_e_update
+#echo ""
+#echo "${red}-------------- Baixando Zabbix do Repo oficial --------------${reset}"; sleep 1
+#wget https://repo.zabbix.com/zabbix/5.0/debian/pool/main/z/zabbix/zabbix-proxy-sqlite3_5.0.9-1%2Bstretch_amd64.deb
+#echo "${red}-------------- Unpacking o proxy --------------${reset}"; sleep 1
+#dpkg -i zabbix-proxy-sqlite3_5.0.9-1+stretch_i386.deb
+#echo "${red}-------------- Instalando as dependencias necessarias --------------${reset}"; sleep 1
+#apt --fix-broken install -y
+#echo ""
+#echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
+#zabbix_proxy -V
+#echo ""
+#echo "${red}-------------- Baixando o Zabbix Agent 2 --------------${reset}"; sleep 1
+#wget https://repo.zabbix.com/zabbix/5.0/debian/pool/main/z/zabbix/zabbix-agent2_5.0.9-1%2Bstretch_amd64.deb
+#echo "${red}-------------- Unpacking o Agent 2 --------------${reset}"; sleep 1
+#dpkg -i zabbix-agent2_5.0.9-1+stretch_amd64.deb
+#echo ""
+#echo "${red}-------------- Zabbix Agent Version --------------${reset}"
+#zabbix_agent2 -V
+#echo ""
+#echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
+# Chamar a função para executar a mudança de configuração
+#setup_configuration
+}
+
 instalacao_debian_10 () {
 # Chamar a função para fazer limpeza e update dos pacotes
 limpa_cache_e_update
@@ -138,7 +179,6 @@ echo ""
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
 # Chamar a função para executar a mudança de configuração
 setup_configuration
-su
 }
 
 instalacao_debian_11 () {
@@ -164,7 +204,6 @@ zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
 # Chamar a função para executar a mudança de configuração
 setup_configuration
-su
 }
 
 instalacao_centos_7 () {
@@ -224,7 +263,7 @@ dnf install zabbix-proxy-sqlite3 -y
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
 zabbix_proxy -V
 echo "${red}-------------- Installando o Agent 2 --------------${reset}"; sleep 1
-dnf install zabbix-agent2
+dnf install zabbix-agent2 -y
 echo "${red}-------------- Zabbix Agent2 Version --------------${reset}"
 zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
@@ -276,7 +315,7 @@ setup_configuration
 
 # Utilize '' para troca de strings normais: 's@STRING_ORIGINAL@STRING_REPLACEMENT@g' <arquivo que vai ser editado>
 # Utilize "" para troca de strings com variveis: "s@STRING_ORIGINAL@STRING_REPLACEMENT=${VARIAVEL}@g" <arquivo que vai ser editado>
-
+#
 # Como utilizar o SED: https://linuxize.com/post/how-to-use-sed-to-find-and-replace-string-in-files/
 
 setup_configuration () {
@@ -355,6 +394,8 @@ echo ""
 echo "Identidade PSK: PSK_`cat /etc/hostname`"
 echo "Chave PSK: `cat /etc/zabbix/zabbix_proxy.psk`"
 echo ""
+# Mostrar o novo hostname da maquina
+su
 }
 
 #*#*#*#*#*#*#*# Incio dos comandos #*#*#*#*#*#*#*#
@@ -369,7 +410,7 @@ echo "${blue} |__  /  / \  | __ )      |  _ \|  _ \ / _ \ \/ /      / \  / ___| 
 echo "${blue}   / /  / _ \ |  _ \ _____| |_) | |_) | | | \  /_____ / _ \| |  _|  _| |  \| | | |  ${reset}"
 echo "${blue}  / /_ / ___ \| |_) |_____|  __/|  _ <| |_| /  \_____/ ___ \ |_| | |___| |\  | | |  ${reset}"
 echo "${blue} /____/_/   \_\____/      |_|   |_| \_\\____/_/\_\   /_/   \_\____|_____|_| \_| |_| ${reset}"
-echo "${blue} Author: https://github.com/Sh4d0w-BR  ${reset}"
+echo "${blue}          Criado pelo Sh4dow-BR  |  https://github.com/Sh4dow-BR ${reset}"
 
 echo ""
 echo "${green}-------------- Verificando informações do host --------------${reset}"; sleep 2
@@ -401,26 +442,26 @@ else
     change_hostname_case
 fi
 
-echo "CTL VERSION FUNCTION"
-echo ${hostnamectl_version}
+# Comando para fazer testes da versão
+# echo ${hostnamectl_version}
 
 if [ "$hostnamectl_version" = 'Debian GNU/Linux 9 (stretch)' ]; then
-	echo "SUCCESS"
+	echo "Versão encontrada no script porem ocorreu um erro"
 	instalacao_debian_9
 elif [ "$hostnamectl_version" = 'Debian GNU/Linux 10 (buster)' ]; then
-    echo "SUCCESS"
+    echo "Versão encontrada no script"
     instalacao_debian_10
 elif [ "$hostnamectl_version" = 'Debian GNU/Linux 11 (bullseye)' ]; then
-    echo "SUCCESS"
+    echo "Versão encontrada no script"
     instalacao_debian_11		
 elif [ "$hostnamectl_version" = 'CentOS Linux 7 ' ]; then
-    echo "SUCCESS"
+    echo "Versão encontrada no script"
 	instalacao_centos_7
 elif [ "$hostnamectl_version" = 'CentOS Linux 8 ' ]; then
-    echo "SUCCESS"
+    echo "Versão encontrada no script"
 	instalacao_centos_8
 elif [ "$hostnamectl_version" = 'CentOS Linux 9 ' ]; then
-    echo "SUCCESS"
+    echo "Versão encontrada no script"
 	instalacao_centos_9
 else
 	echo "FAIL: Não tem a instalação para essa maquina"
