@@ -13,23 +13,29 @@
 
 ##### Variaveis para os arquivos: /etc/zabbix/zabbix_proxy.conf e /etc/zabbix/zabbix_agent2.conf
 
-# Agent configs
-agent_logfile_size=0 #default=0
-agent_passive_server_ip=127.0.0.1 #default=127.0.0.1
-agent_active_server_ip=127.0.0.1 #default=127.0.0.1
+#### Agent configs ####
+agent_logfile_size=0 # default=0
+# ** Como o proxy provalmente será monitorado por si mesmo, os IPs se refere ao localhost **
+agent_passive_server_ip=127.0.0.1 # default=127.0.0.1
+agent_active_server_ip=127.0.0.1 # default=127.0.0.1
 
-# Proxy configs
-proxy_mode=1 #default=1 & passivo=0
-proxy_server_ip=127.0.0.1 #default=127.0.0.1
-log_file_size=1 #default=1
-enable_remote_commands=0 #default=0 & enable=1
-log_remote_commands=0 #default=0 & enable=1
-DBname_local=/tmp/proxy.db #default=zabbix_proxy
-proxy_local_buffer=0 #default=0
-proxy_offline_buffer=3 #default=1
-config_frequency=3600 #default=3600
-housekeeping_frequency=1 #default=1
-timeout=4 #default=4
+#### Proxy configs ####
+proxy_mode=0 # ativo=0 & passivo=1
+# ** Aqui será o IP do seu Zabbix Server **
+proxy_server_ip=127.0.0.1 # default=127.0.0.1
+log_file_size=0 # default=0
+enable_remote_commands=0 # disable=0 & enable=1
+log_remote_commands=0 # disable=0 & enable=1
+# ** Esse é o local aonde o DB será colocado..Pode ser na pasta /tmp ou /var ou qualquer outro lugar **
+# ** Predefini no /tmp para evitar problemas na instalação inicial **
+# ** Mantenha o nome "proxy.db" por boas praticas **
+DBname_local=/tmp/proxy.db # default=zabbix_proxy
+proxy_local_buffer=0 # default=0
+proxy_offline_buffer=1 # default=1
+# ** Aqui define em quantos segundos o proxy perguntará se te uma nova configuração do Zabbix Server **
+config_frequency=3600 # default=3600
+housekeeping_frequency=1 # default=1
+timeout=4 # default=4
 
 ###############################################
 
@@ -373,9 +379,11 @@ echo "${red}-------------- Gerando as chaves de PSK do Zabbix Proxy ------------
 
 echo ""
 echo "${red}-------------- Enabling e Resetando o Serviço Proxy e Agent 2 --------------${reset}"; sleep 2
-# Restart Serviço Proxy
+# Dando permissoes para a pasta /etc/zabbix
 chown -R zabbix. /etc/zabbix
+# Enabling os serviços para quando a maquina reiniciar, ele inicia os 2 serviços no boot
 systemctl enable zabbix-proxy.service && systemctl enable zabbix-agent2.service
+# Restart dos serviços
 systemctl restart zabbix-proxy.service && systemctl restart zabbix-agent2.service
 
 echo ""
@@ -417,7 +425,7 @@ echo "${green}-------------- Verificando informações do host --------------${r
 echo ""
 
 if [ "$1" = 'change' ] && [ -n "$2" ]; then
-    # Se a posição 1 é "change" e o valor do string da posição 2 não é zero, faça esse:
+    # Se a posição 1 é "change" e o valor do string da posição 2 não é zero, faça esse para trocar o hostname:
     echo "Antigo hostname: `cat /etc/hostname`"
     echo "Novo hostname: $2"
     # Trocando o hostname para o segundo parametro que foi inserido
@@ -436,6 +444,7 @@ elif [ "$1" = 'run' ]; then
     # Executando a instalação sem trocar o hostname
     echo ""
     echo 'Executando a instalação sem trocar o hostname'
+	echo ""
 else
     hostnamectl_grep
     # Chama a função para seguir com o case normal porque não inseriu um parâmetro
@@ -453,7 +462,7 @@ elif [ "$hostnamectl_version" = 'Debian GNU/Linux 10 (buster)' ]; then
     instalacao_debian_10
 elif [ "$hostnamectl_version" = 'Debian GNU/Linux 11 (bullseye)' ]; then
     echo "Versão encontrada no script"
-    instalacao_debian_11		
+    instalacao_debian_11
 elif [ "$hostnamectl_version" = 'CentOS Linux 7 ' ]; then
     echo "Versão encontrada no script"
 	instalacao_centos_7
@@ -464,5 +473,5 @@ elif [ "$hostnamectl_version" = 'CentOS Linux 9 ' ]; then
     echo "Versão encontrada no script"
 	instalacao_centos_9
 else
-	echo "FAIL: Não tem a instalação para essa maquina"
+	echo "FAIL: Não tem a instalação para essa versão que está utilizando :("
 fi
