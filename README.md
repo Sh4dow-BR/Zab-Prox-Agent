@@ -10,6 +10,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/Sh4dow-BR/Zab-Prox-Agent?color=blueviolet)](https://github.com/Sh4dow-BR/Zab-Prox-Agent/issues)
 [![GitHub stars](https://img.shields.io/github/stars/Sh4dow-BR/Zab-Prox-Agent)](https://github.com/Sh4dow-BR/Zab-Prox-Agent/stargazers)
 
+
 ## Porque Dessa Ferramenta?
 Essa ferramenta serve para reduzir drasticamente o tempo de instalar os proxies do Zabbix e também o agent 2.
 
@@ -60,6 +61,10 @@ Esse script tem 4 modos de ser utilizado:
 2. Com o parâmetro "run", você irá pular a etapa de pedir a troca de hostname e vai direto para a instalação.
 2. Com o parâmetro "change" você irá para um menu para fazer a troca de hostname e depois continuar com a instalação.
 4. Com o parâmetro "change NOVO_HOSTNAME" você consegue trocar o hostname atual para um predefinido antes de fazer a instalação.
+
+
+***Clique no GIF abaixo para ver o video no Vimeo:***
+[<img src="https://user-images.githubusercontent.com/108578555/179556701-f29c7c53-9617-46ee-bccf-b2084a35a191.gif" width="65%">](https://vimeo.com/731052251)
 ---
 Explicação de cada etapa e como rodar o script:
 1. Entra com o usuário root
