@@ -252,22 +252,30 @@ yum install pcre2 -y
 # yum upgrade
 # yum install epel-release
 # yum install yum-utils
+echo ""
 echo "${red}----------- Verificando se o SELINUX esta ativo e trocando se necessário -----------${reset}"; sleep 1
 # Executar a função para verificar o status do selinux e trocar para permissivo temporariamente durante a instalação
 selinux_check
+echo ""
 echo "${red}-------------- Baixando o release do Zabbix --------------${reset}"; sleep 1
 # Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/rhel/7/
 rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/7/x86_64/zabbix-release-6.0-3.el7.noarch.rpm
+echo ""
 echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
 yum clean all
+echo ""
 echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
 yum install zabbix-proxy-sqlite3
+echo ""
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"; sleep 1
 zabbix_proxy -V
+echo ""
 echo "${red}-------------- Instalando o Zabbix Agent 2 --------------${reset}"; sleep 1
 yum install zabbix-agent2
+echo ""
 echo "${red}-------------- Zabbix Agent 2 Version --------------${reset}"; sleep 1
 zabbix_agent2 -V
+echo ""
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
 # Chamar a função de setup para executar a mudança de configuraçoes 
 setup_configuration
@@ -284,22 +292,30 @@ yum install pcre2 -y
 # dnf upgrade
 # dnf install epel-release
 # dnf install yum-utils
+echo ""
 echo "${red}----------- Verificando se o SELINUX esta ativo e trocando se necessário -----------${reset}"; sleep 1
 # Executar a função para verificar o status do selinux e trocar para permissivo temporariamente durante a instalação
 selinux_check
+echo ""
 echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
 # Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/rhel/8/
 rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-3.el8.noarch.rpm
+echo ""
 echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
 dnf clean all
+echo ""
 echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
 dnf install zabbix-proxy-sqlite3
+echo ""
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"; sleep 1
 zabbix_proxy -V
+echo ""
 echo "${red}-------------- Instalando o Zabbix Agent 2 --------------${reset}"; sleep 1
 dnf install zabbix-agent2
+echo ""
 echo "${red}-------------- Zabbix Agent 2 Version --------------${reset}"; sleep 1
 zabbix_agent2 -V
+echo ""
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
 # Chamar a função de setup para executar a mudança de configuraçoes 
 setup_configuration
@@ -314,22 +330,30 @@ yum install pcre2 -y
 # dnf upgrade
 # dnf install epel-release
 # dnf install yum-utils
+echo ""
 echo "${red}----------- Verificando se o SELINUX esta ativo e trocando se necessário -----------${reset}"; sleep 1
 # Executar a função para verificar o status do selinux e trocar para permissivo temporariamente durante a instalação
 selinux_check
+echo ""
 echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
 # Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/rhel/9/
 rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/9/x86_64/zabbix-release-6.0-3.el9.noarch.rpm
+echo ""
 echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
 dnf clean all
+echo ""
 echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
 dnf install zabbix-proxy-sqlite3
+echo ""
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"; sleep 1
 zabbix_proxy -V
+echo ""
 echo "${red}-------------- Instalando o Zabbix Agent 2 --------------${reset}"; sleep 1
 dnf install zabbix-agent2
+echo ""
 echo "${red}-------------- Zabbix Agent 2 Version --------------${reset}"; sleep 1
 zabbix_agent2 -V
+echo ""
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
 # Chamar a função de setup para executar a mudança de configuraçoes 
 setup_configuration
@@ -342,7 +366,7 @@ setup_configuration
 
 setup_configuration () {
 echo ""
-echo "${red}-------------- Mudando as configurações do Zabbix Agent 2 --------------${reset}"; sleep 2
+echo "${red}-------------- Mudando as configurações do Zabbix Agent 2 conf --------------${reset}"; sleep 2
 
 # Troca do agent_logfile_size
 sed -i "s@LogFileSize=0@LogFileSize=${agent_logfile_size}@g" /etc/zabbix/zabbix_agent2.conf
