@@ -178,45 +178,31 @@ apt update
 # apt upgrade
 # apt install -f
 echo ""
-echo "${red}-------------- Baixando Zabbix do Repo oficial --------------${reset}"; sleep 1
+echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
 # Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/
 wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-3%2Bdebian10_all.deb
 dpkg -i zabbix-release_6.0-3+debian10_all.deb
+echo ""
 echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
 apt install zabbix-proxy-sqlite3 -y
+echo ""
 echo "${red}-------------- Instalando as dependencias necessárias --------------${reset}"; sleep 1
 apt --fix-broken install -y
 echo ""
-echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
-zabbix_proxy -V
-echo ""
-echo "${red}-------------- Baixando o Zabbix Agent 2 --------------${reset}"; sleep 1
-wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix/zabbix-agent2_6.0.3-1+debian10_amd64.deb
-echo "${red}-------------- Unpacking o Agent 2 --------------${reset}"; sleep 1
-dpkg -i zabbix-agent2_6.0.3-1+debian10_amd64.deb
-echo ""
-echo "${red}-------------- Zabbix Agent Version --------------${reset}"
-zabbix_agent2 -V
-echo ""
-echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
-# Chamar a função de setup para executar a mudança de configuração
-setup_configuration
--------------------------------------------------------------------------------------------------------------
-echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
-
-rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-3.el9.noarch.rpm
-echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
-dnf clean all
-echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
-dnf install zabbix-proxy-sqlite3
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"; sleep 1
 zabbix_proxy -V
+echo ""
 echo "${red}-------------- Instalando o Zabbix Agent 2 --------------${reset}"; sleep 1
-dnf install zabbix-agent2
+apt install zabbix-agent2 -y
+echo ""
+echo "${red}-------------- Instalando as dependencias necessárias --------------${reset}"; sleep 1
+apt --fix-broken install -y
+echo ""
 echo "${red}-------------- Zabbix Agent 2 Version --------------${reset}"; sleep 1
 zabbix_agent2 -V
+echo ""
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
-# Chamar a função de setup para executar a mudança de configuraçoes 
+# Chamar a função de setup para executar a mudança de configuração
 setup_configuration
 }
 
@@ -229,24 +215,30 @@ apt update
 # apt upgrade
 # apt install -f
 echo ""
-echo "${red}-------------- Baixando Zabbix do Repo oficial --------------${reset}"; sleep 1
+echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
 # Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/
-wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix/zabbix-proxy-sqlite3_6.0.3-1+debian11_amd64.deb
-echo "${red}-------------- Unpacking o proxy --------------${reset}"; sleep 1
-dpkg -i zabbix-proxy-sqlite3_6.0.3-1+debian11_amd64.deb; echo ""
-echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
-zabbix_proxy -V
+wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-3%2Bdebian11_all.deb
+dpkg -i zabbix-release_6.0-3+debian11_all.deb
 echo ""
-echo "${red}-------------- Baixando o Zabbix Agent 2 --------------${reset}"; sleep 1
-wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix/zabbix-agent2_6.0.3-1+debian11_amd64.deb
-echo "${red}-------------- Unpacking o Agent 2 --------------${reset}"; sleep 1
-dpkg -i zabbix-agent2_6.0.3-1+debian11_amd64.deb
+echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
+apt install zabbix-proxy-sqlite3 -y
+echo ""
 echo "${red}-------------- Instalando as dependencias necessárias --------------${reset}"; sleep 1
 apt --fix-broken install -y
 echo ""
-echo "${red}-------------- Zabbix Agent Version --------------${reset}"
+echo "${red}-------------- Zabbix Proxy Version --------------${reset}"; sleep 1
+zabbix_proxy -V
+echo ""
+echo "${red}-------------- Instalando o Zabbix Agent 2 --------------${reset}"; sleep 1
+apt install zabbix-agent2 -y
+echo ""
+echo "${red}-------------- Instalando as dependencias necessárias --------------${reset}"; sleep 1
+apt --fix-broken install -y
+echo ""
+echo "${red}-------------- Zabbix Agent 2 Version --------------${reset}"; sleep 1
 zabbix_agent2 -V
-echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
+echo ""
+echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
 # Chamar a função de setup para executar a mudança de configuração
 setup_configuration
 }
@@ -503,5 +495,5 @@ elif [ "$hostnamectl_version" = 'CentOS Linux 9 ' ] || [ "$hostnamectl_version" 
 	echo "Executando o script"
 	instalacao_centos_9
 else
-	echo "FAIL: Não tem a instalação para essa versão que está utilizando ou está faltando um parâmetro na variavel do hostnamectl_version :("
+	echo "FAIL: Não tem a instalação para essa versão que está utilizando ou está faltando um ajuste no parâmetro da variavel hostnamectl_version :("
 fi
