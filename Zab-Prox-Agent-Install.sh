@@ -111,16 +111,6 @@ case $hostname_change in
 esac
 }
 
-limpa_cache_e_update () {
-echo "${red}-------------- Limpando o cache e atualizando os pacotes --------------${reset}"; sleep 1
-apt clean
-# Atualizar os pacotes recente do repository debian **EXTREMAMENTE IMPORTE**
-apt update
-# Opcional
-# apt upgrade
-# apt install -f
-}
-
 selinux_check () {
 if [ "$selinux_mode" = 'enforcing' ]; then
 	echo 'Selinux está no modo "enforcing" e será trocado para disabled'
@@ -180,14 +170,21 @@ echo '> Obs. eu não testei no meu ambiente porque tenho o Zabbix 6.0'
 }
 
 instalacao_debian_10 () {
-# Chamar a função para fazer limpeza e update dos pacotes
-limpa_cache_e_update
+echo "${red}-------------- Limpando o cache e verificando se tem atualização pendente --------------${reset}"; sleep 1
+apt clean
+# **EXTREMAMENTE IMPORTANTE** para a familia Debian
+apt update
+# -- Instalações e comandos opcionais
+# apt upgrade
+# apt install -f
 echo ""
 echo "${red}-------------- Baixando Zabbix do Repo oficial --------------${reset}"; sleep 1
-wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix/zabbix-proxy-sqlite3_6.0.3-1+debian10_amd64.deb
-echo "${red}-------------- Unpacking o proxy --------------${reset}"; sleep 1
-dpkg -i zabbix-proxy-sqlite3_6.0.3-1+debian10_amd64.deb
-echo "${red}-------------- Instalando as dependencias necessarias --------------${reset}"; sleep 1
+# Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/
+wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-3%2Bdebian10_all.deb
+dpkg -i zabbix-release_6.0-3+debian10_all.deb
+echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
+apt install zabbix-proxy-sqlite3 -y
+echo "${red}-------------- Instalando as dependencias necessárias --------------${reset}"; sleep 1
 apt --fix-broken install -y
 echo ""
 echo "${red}-------------- Zabbix Proxy Version --------------${reset}"
@@ -204,13 +201,36 @@ echo ""
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
 # Chamar a função de setup para executar a mudança de configuração
 setup_configuration
+-------------------------------------------------------------------------------------------------------------
+echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
+
+rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-3.el9.noarch.rpm
+echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
+dnf clean all
+echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
+dnf install zabbix-proxy-sqlite3
+echo "${red}-------------- Zabbix Proxy Version --------------${reset}"; sleep 1
+zabbix_proxy -V
+echo "${red}-------------- Instalando o Zabbix Agent 2 --------------${reset}"; sleep 1
+dnf install zabbix-agent2
+echo "${red}-------------- Zabbix Agent 2 Version --------------${reset}"; sleep 1
+zabbix_agent2 -V
+echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
+# Chamar a função de setup para executar a mudança de configuraçoes 
+setup_configuration
 }
 
 instalacao_debian_11 () {
-# Chamar a função para fazer limpeza e update dos pacotes
-limpa_cache_e_update
+echo "${red}-------------- Limpando o cache e verificando se tem atualização pendente --------------${reset}"; sleep 1
+apt clean
+# **EXTREMAMENTE IMPORTANTE** para a familia Debian
+apt update
+# -- Instalações e comandos opcionais
+# apt upgrade
+# apt install -f
 echo ""
 echo "${red}-------------- Baixando Zabbix do Repo oficial --------------${reset}"; sleep 1
+# Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/
 wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix/zabbix-proxy-sqlite3_6.0.3-1+debian11_amd64.deb
 echo "${red}-------------- Unpacking o proxy --------------${reset}"; sleep 1
 dpkg -i zabbix-proxy-sqlite3_6.0.3-1+debian11_amd64.deb; echo ""
@@ -221,7 +241,7 @@ echo "${red}-------------- Baixando o Zabbix Agent 2 --------------${reset}"; sl
 wget https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix/zabbix-agent2_6.0.3-1+debian11_amd64.deb
 echo "${red}-------------- Unpacking o Agent 2 --------------${reset}"; sleep 1
 dpkg -i zabbix-agent2_6.0.3-1+debian11_amd64.deb
-echo "${red}-------------- Instalando as dependencias necessarias --------------${reset}"; sleep 1
+echo "${red}-------------- Instalando as dependencias necessárias --------------${reset}"; sleep 1
 apt --fix-broken install -y
 echo ""
 echo "${red}-------------- Zabbix Agent Version --------------${reset}"
@@ -234,6 +254,8 @@ setup_configuration
 instalacao_centos_7 () {
 echo "${red}-------------- Verificando se tem atualização pendente e atualizando os pacotes --------------${reset}"; sleep 1
 yum update
+# Pacote extremamente importante para a instalação do Zabbix Agent 2
+yum install pcre2 -y
 # -- Instalações e comandos opcionais
 # yum upgrade
 # yum install epel-release
@@ -242,7 +264,8 @@ echo "${red}----------- Verificando se o SELINUX esta ativo e trocando se necess
 # Executar a função para verificar o status do selinux e trocar para permissivo temporariamente durante a instalação
 selinux_check
 echo "${red}-------------- Baixando o release do Zabbix --------------${reset}"; sleep 1
-rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/7/x86_64/zabbix-release-6.0-3.el9.noarch.rpm
+# Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/rhel/7/
+rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/7/x86_64/zabbix-release-6.0-3.el7.noarch.rpm
 echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
 yum clean all
 echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
@@ -263,6 +286,8 @@ instalacao_centos_8 () {
 ## https://www.gnulinuxbrasil.com.br/2022/04/12/centos-8-com-erro-centos-8-appstream-error-failed-to-download-metadata-for-repo-appstream-cannot-prepare-internal-mirrorlist-no-urls-in-mirrorlist/
 echo "${red}----------- Verificando se tem atualização pendente e atualizando os pacotes -----------${reset}"; sleep 1
 dnf update
+# Pacote extremamente importante para a instalação do Zabbix Agent 2
+yum install pcre2 -y
 # -- Instalações e comandos opcionais
 # dnf upgrade
 # dnf install epel-release
@@ -271,7 +296,8 @@ echo "${red}----------- Verificando se o SELINUX esta ativo e trocando se necess
 # Executar a função para verificar o status do selinux e trocar para permissivo temporariamente durante a instalação
 selinux_check
 echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
-rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-3.el9.noarch.rpm
+# Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/rhel/8/
+rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-3.el8.noarch.rpm
 echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
 dnf clean all
 echo "${red}-------------- Instalando o Zabbix Proxy --------------${reset}"; sleep 1
@@ -290,6 +316,8 @@ setup_configuration
 instalacao_centos_9 () {
 echo "${red}----------- Verificando se tem atualização pendente e atualizando os pacotes -----------${reset}"; sleep 1
 dnf update
+# Pacote extremamente importante para a instalação do Zabbix Agent 2
+yum install pcre2 -y
 # -- Instalações e comandos opcionais
 # dnf upgrade
 # dnf install epel-release
@@ -298,6 +326,7 @@ echo "${red}----------- Verificando se o SELINUX esta ativo e trocando se necess
 # Executar a função para verificar o status do selinux e trocar para permissivo temporariamente durante a instalação
 selinux_check
 echo "${red}-------------- Baixando o Zabbix release do Repo oficial --------------${reset}"; sleep 1
+# Local do repo para baixar os pacotes individuais ou releases: https://repo.zabbix.com/zabbix/6.0/rhel/9/
 rpm -Uvh https://repo.zabbix.com/zabbix/6.0/rhel/9/x86_64/zabbix-release-6.0-3.el9.noarch.rpm
 echo "${red}-------------- Limpando o cache local --------------${reset}"; sleep 1
 dnf clean all
@@ -324,53 +353,53 @@ echo ""
 echo "${red}-------------- Mudando as configurações do Zabbix Agent 2 --------------${reset}"; sleep 2
 
 # Troca do agent_logfile_size
-  sed -i "s@LogFileSize=0@LogFileSize=${agent_logfile_size}@g" /etc/zabbix/zabbix_agent2.conf
+sed -i "s@LogFileSize=0@LogFileSize=${agent_logfile_size}@g" /etc/zabbix/zabbix_agent2.conf
 # Troca do Passive Server IP
-  sed -i "s@Server=127.0.0.1@Server=${agent_passive_server_ip}@g" /etc/zabbix/zabbix_agent2.conf
+sed -i "s@Server=127.0.0.1@Server=${agent_passive_server_ip}@g" /etc/zabbix/zabbix_agent2.conf
 # Troca do Active Server IP
-  sed -i "s@ServerActive=127.0.0.1@ServerActive=${agent_active_server_ip}@g" /etc/zabbix/zabbix_agent2.conf
+sed -i "s@ServerActive=127.0.0.1@ServerActive=${agent_active_server_ip}@g" /etc/zabbix/zabbix_agent2.conf
 # Troca de Hostname
-  sed -i 's@Hostname=Zabbix server@Hostname='`cat /etc/hostname`'@g' /etc/zabbix/zabbix_agent2.conf
+sed -i 's@Hostname=Zabbix server@Hostname='`cat /etc/hostname`'@g' /etc/zabbix/zabbix_agent2.conf
 
 echo ""
 echo "${red}-------------- Mudando as configurações do Zabbix Proxy Conf --------------${reset}"; sleep 2
 # Troca do Proxy Mode
-  sed -i "s@# ProxyMode=0@ProxyMode=${proxy_mode}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@# ProxyMode=0@ProxyMode=${proxy_mode}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Server IP
-  sed -i "s@Server=127.0.0.1@Server=${proxy_server_ip}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@Server=127.0.0.1@Server=${proxy_server_ip}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca de Hostname
-  sed -i 's@Hostname=Zabbix proxy@Hostname='`cat /etc/hostname`'@g' /etc/zabbix/zabbix_proxy.conf
+sed -i 's@Hostname=Zabbix proxy@Hostname='`cat /etc/hostname`'@g' /etc/zabbix/zabbix_proxy.conf
 # Troca do Log File Size
-  sed -i "s@LogFileSize=0@LogFileSize=${log_file_size}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@LogFileSize=0@LogFileSize=${log_file_size}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Enable Remote Commands
-  sed -i "s@# EnableRemoteCommands=0@EnableRemoteCommands=${enable_remote_commands}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@# EnableRemoteCommands=0@EnableRemoteCommands=${enable_remote_commands}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Log Remote Commands
-  sed -i "s@# LogRemoteCommands=0@LogRemoteCommands=${log_remote_commands}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@# LogRemoteCommands=0@LogRemoteCommands=${log_remote_commands}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca de DBname
-  sed -i "s@DBName=zabbix_proxy@DBName=${DBname_local}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@DBName=zabbix_proxy@DBName=${DBname_local}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Proxy Local Buffer
-  sed -i "s@# ProxyLocalBuffer=0@ProxyLocalBuffer=${proxy_local_buffer}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@# ProxyLocalBuffer=0@ProxyLocalBuffer=${proxy_local_buffer}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Proxy Offline Buffer
-  sed -i "s@# ProxyOfflineBuffer=1@ProxyOfflineBuffer=${proxy_offline_buffer}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@# ProxyOfflineBuffer=1@ProxyOfflineBuffer=${proxy_offline_buffer}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Config Frequency
-  sed -i "s@# ConfigFrequency=3600@ConfigFrequency=${config_frequency}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@# ConfigFrequency=3600@ConfigFrequency=${config_frequency}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Housekeeping Frequency
-  sed -i "s@# HousekeepingFrequency=1@HousekeepingFrequency=${housekeeping_frequency}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@# HousekeepingFrequency=1@HousekeepingFrequency=${housekeeping_frequency}@g" /etc/zabbix/zabbix_proxy.conf
 # Troca do Timeout
-  sed -i "s@Timeout=4@Timeout=${timeout}@g" /etc/zabbix/zabbix_proxy.conf
+sed -i "s@Timeout=4@Timeout=${timeout}@g" /etc/zabbix/zabbix_proxy.conf
 
 echo ""
 echo "${red}-------------- Gerando as chaves de PSK do Zabbix Proxy --------------${reset}"; sleep 2
 # Gerando Chave PSK
-  openssl rand -hex 32 > /etc/zabbix/zabbix_proxy.psk
+openssl rand -hex 32 > /etc/zabbix/zabbix_proxy.psk
 # Troca de TLSConnect
-  sed -i 's@# TLSConnect=unencrypted@TLSConnect=psk@g' /etc/zabbix/zabbix_proxy.conf
+sed -i 's@# TLSConnect=unencrypted@TLSConnect=psk@g' /etc/zabbix/zabbix_proxy.conf
 # Troca de TLSAccept
-  sed -i 's@# TLSAccept=unencrypted@TLSAccept=psk@g' /etc/zabbix/zabbix_proxy.conf
+sed -i 's@# TLSAccept=unencrypted@TLSAccept=psk@g' /etc/zabbix/zabbix_proxy.conf
 # Troca de TLSPSKIdentity
-  sed -i 's@# TLSPSKIdentity=@TLSPSKIdentity=PSK_'`cat /etc/hostname`'@g' /etc/zabbix/zabbix_proxy.conf
+sed -i 's@# TLSPSKIdentity=@TLSPSKIdentity=PSK_'`cat /etc/hostname`'@g' /etc/zabbix/zabbix_proxy.conf
 # Troca de TLSPSKFile
-  sed -i 's@# TLSPSKFile=@TLSPSKFile=/etc/zabbix/zabbix_proxy.psk@g' /etc/zabbix/zabbix_proxy.conf
+sed -i 's@# TLSPSKFile=@TLSPSKFile=/etc/zabbix/zabbix_proxy.psk@g' /etc/zabbix/zabbix_proxy.conf
 
 echo ""
 echo "${red}-------------- Enabling e Resetando o Serviço Proxy e Agent 2 --------------${reset}"; sleep 2
