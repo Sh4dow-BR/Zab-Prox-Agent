@@ -113,7 +113,7 @@ esac
 
 limpa_cache_e_update () {
 echo "${red}-------------- Limpando o cache e atualizando os pacotes --------------${reset}"; sleep 1
-apt-get clean
+apt clean
 # Atualizar os pacotes recente do repository debian **EXTREMAMENTE IMPORTE**
 apt update
 # Opcional
@@ -382,7 +382,7 @@ echo "${red}-------------- Enabling e Resetando o Serviço Proxy e Agent 2 -----
 # Dando permissoes para a pasta /etc/zabbix
 chown -R zabbix. /etc/zabbix
 # Enabling os serviços para quando a maquina reiniciar, ele inicia os 2 serviços no boot
-systemctl enable zabbix-proxy.service && systemctl enable zabbix-agent2.service
+sudo systemctl enable zabbix-proxy.service && sudo systemctl enable zabbix-agent2.service
 # Restart dos serviços
 systemctl restart zabbix-proxy.service && systemctl restart zabbix-agent2.service
 
