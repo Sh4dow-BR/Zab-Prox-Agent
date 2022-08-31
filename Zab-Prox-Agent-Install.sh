@@ -183,7 +183,7 @@ echo "${red}-------------- Zabbix Agent Version --------------${reset}"
 zabbix_agent2 -V
 echo ""
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
-# Chamar a função para executar a mudança de configuração
+# Chamar a função de setup para executar a mudança de configuração
 setup_configuration
 }
 
@@ -208,7 +208,7 @@ echo ""
 echo "${red}-------------- Zabbix Agent Version --------------${reset}"
 zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
-# Chamar a função para executar a mudança de configuração
+# Chamar a função de setup para executar a mudança de configuração
 setup_configuration
 }
 
@@ -230,6 +230,7 @@ dnf clean all | dnf install zabbix-agent2
 echo "${red}-------------- Zabbix Agent Version --------------${reset}"
 zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"
+# Chamar a função de setup para executar a mudança de configuração
 setup_configuration
 }
 
@@ -273,6 +274,7 @@ dnf install zabbix-agent2 -y
 echo "${red}-------------- Zabbix Agent2 Version --------------${reset}"
 zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
+# Chamar a função de setup para executar a mudança de configuração
 setup_configuration
 }
 
@@ -316,6 +318,7 @@ dnf install zabbix-agent2
 echo "${red}-------------- Zabbix Agent2 Version --------------${reset}"
 zabbix_agent2 -V
 echo "${green}-------------- Instalação completa em $SECONDS segundos --------------${reset}"; sleep 1
+# Chamar a função de setup para executar a mudança de configuração
 setup_configuration
 }
 
@@ -402,6 +405,7 @@ echo ""
 echo "Identidade PSK: PSK_`cat /etc/hostname`"
 echo "Chave PSK: `cat /etc/zabbix/zabbix_proxy.psk`"
 echo ""
+echo 'Instalação completa!'
 # Mostrar o novo hostname da maquina
 su
 }
@@ -459,19 +463,24 @@ if [ "$hostnamectl_version" = 'Debian GNU/Linux 9 (stretch)' ]; then
 	instalacao_debian_9
 elif [ "$hostnamectl_version" = 'Debian GNU/Linux 10 (buster)' ]; then
     echo "Versão encontrada no script"
+	echo "Executando o script"
     instalacao_debian_10
 elif [ "$hostnamectl_version" = 'Debian GNU/Linux 11 (bullseye)' ]; then
     echo "Versão encontrada no script"
+	echo "Executando o script"
     instalacao_debian_11
-elif [ "$hostnamectl_version" = 'CentOS Linux 7 ' ]; then
+elif [ "$hostnamectl_version" = 'CentOS Linux 7 ' ] || [ "$hostnamectl_version" = 'CentOS Linux 7 (Core)' ]; then
     echo "Versão encontrada no script"
+	echo "Executando o script"
 	instalacao_centos_7
-elif [ "$hostnamectl_version" = 'CentOS Linux 8 ' ]; then
+elif [ "$hostnamectl_version" = 'CentOS Linux 8 ' ] || [ "$hostnamectl_version" = 'CentOS Stream 8 ' ]; then
     echo "Versão encontrada no script"
+	echo "Executando o script"
 	instalacao_centos_8
 elif [ "$hostnamectl_version" = 'CentOS Linux 9 ' ]; then
     echo "Versão encontrada no script"
+	echo "Executando o script"
 	instalacao_centos_9
 else
-	echo "FAIL: Não tem a instalação para essa versão que está utilizando :("
+	echo "FAIL: Não tem a instalação para essa versão que está utilizando ou está faltando um parâmetro na variavel do hostnamectl_version :("
 fi
